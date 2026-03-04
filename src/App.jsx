@@ -1,27 +1,47 @@
 import { useState } from 'react'
 import './App.css'
 
+const STORAGE_KEY = 'todos'
+
+function load() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [
+      { id: 1, text: 'Buy groceries', done: false },
+      { id: 2, text: 'Walk the dog', done: false },
+    ]
+  } catch {
+    return []
+  }
+}
+
+function save(todos) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+}
+
 function App() {
-  const [todos, setTodos] = useState([
-    { id: 1, text: 'Buy groceries', done: false },
-    { id: 2, text: 'Walk the dog', done: false },
-  ])
+  const [todos, setTodos] = useState(load)
   const [input, setInput] = useState('')
 
   function addTodo(e) {
     e.preventDefault()
     const text = input.trim()
     if (!text) return
-    setTodos([...todos, { id: Date.now(), text, done: false }])
+    const next = [...todos, { id: Date.now(), text, done: false }]
+    setTodos(next)
+    save(next)
     setInput('')
   }
 
   function toggleTodo(id) {
-    setTodos(todos.map(t => t.id === id ? { ...t, done: !t.done } : t))
+    const next = todos.map(t => t.id === id ? { ...t, done: !t.done } : t)
+    setTodos(next)
+    save(next)
   }
 
   function deleteTodo(id) {
-    setTodos(todos.filter(t => t.id !== id))
+    const next = todos.filter(t => t.id !== id)
+    setTodos(next)
+    save(next)
   }
 
   const remaining = todos.filter(t => !t.done).length
